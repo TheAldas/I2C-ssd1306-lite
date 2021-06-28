@@ -9,7 +9,7 @@ I2C_ssd1306::I2C_ssd1306(uint8_t width, uint8_t height, byte ssd1306_address) {
   _width = width;
   _height = height;
   _addr = ssd1306_address;
-  _screenBuffer = (uint8_t *)malloc((width * height) / 8);
+  _screenBuffer = (uint8_t *)malloc((width * (height + 7) / 8));
 }
 
 
@@ -48,7 +48,7 @@ void I2C_ssd1306::display() {
 }
 
 void I2C_ssd1306::clearDisplay() {
-  memset(_screenBuffer, 0, _width * _height / 8);
+  memset(_screenBuffer, 0, (_width * (_height + 7) / 8));
 }
 
 void I2C_ssd1306::drawPixel(int16_t x, int16_t y, uint8_t color) {
@@ -301,6 +301,17 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
   y1 = (y1 < _height) ? y1 : (_height - 1);
   int16_t slopeDirection = 1;
   bool swapped = false;
+
+  if (y1 == y0){
+    drawHLine(x0, y0, x1, color);
+    return;
+  }
+  else if (x0 == x1){
+    drawVLine(x0, y0, y1, color);
+    return;
+  }
+  else if (y1 < y0) slopeDirection = -1;
+
   if (abs(x1 - x0) < abs(y1 - y0)) {
     swapped = true;
     _swap_uint8_t(x0, y0);
@@ -311,10 +322,6 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
     _swap_uint8_t(x0, x1);
     _swap_uint8_t(y0, y1);
   }
-
-  if (y1 == y0) drawHLine(x0, y0, x1, color);
-  else if (x0 == x1) drawVLine(x0, y0, y1, color);
-  else if (y1 < y0) slopeDirection = -1;
 
   uint8_t dx = x1 - x0;
   uint8_t dy = abs(y1 - y0);
@@ -331,7 +338,7 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
   }
 }
 
-//faster than implementation of drawHLine without drawPixel call
+//faster implementation of drawHLine without drawPixel call
 void I2C_ssd1306::drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color) {
   y0 = (y0 < _height) ? y0 : (_height - 1);
   x0 = (x0 < _width) ? x0 : (_width - 1);
@@ -370,7 +377,7 @@ void I2C_ssd1306::drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color) {
   }
 }*/
 
-//faster than implementation of drawVLine without drawPixel call
+//faster implementation of drawVLine without drawPixel call
 void I2C_ssd1306::drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color) {
   if (y0 > y1) _swap_int16_t(y0, y1);
   y0 = (y0 < _height) ? y0 : (_height - 1);
@@ -496,6 +503,8 @@ void I2C_ssd1306::sendCommandList(uint8_t* c_ptr, uint8_t listSize) {
 }
 
 void I2C_ssd1306::initialize() {
+  uint8_t comPinsConf = 0x02;
+  if(_width == 128 && _height == 64) comPinsConf = 0x12;
   uint8_t initList[] = {
     COMMAND_DISPLAY_OFF,
     COMMAND_MUX_RATIO,
@@ -510,7 +519,7 @@ void I2C_ssd1306::initialize() {
     COMMAND_SET_SEGMENT_RE_MAP_NORMAL,
     COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL,
     COMMAND_COM_PINS_CONFIGURATION,
-    0x02,
+    comPinsConf,
     COMMAND_MEMORY_ADDRESSING_MODE,
     0x00,
     COMMAND_CONTRAST,
