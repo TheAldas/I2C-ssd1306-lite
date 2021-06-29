@@ -472,6 +472,14 @@ void I2C_ssd1306::setCursorCoord(uint8_t coordX, uint8_t coordY){
   _cursorY = coordY;
 }
 
+void I2C_ssd1306::setCursorColumn(uint8_t column){
+  _cursorX = column;
+}
+
+void I2C_ssd1306::setCursorRow(uint8_t row){
+  _cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);
+}
+
 void I2C_ssd1306::setDisplayOn(bool displayOn){
   if(displayOn) sendCommand(COMMAND_DISPLAY_ON);
   else sendCommand(COMMAND_DISPLAY_OFF);

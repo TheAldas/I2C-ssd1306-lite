@@ -62,6 +62,8 @@ class I2C_ssd1306 {
     void drawText(const unsigned char text[], uint8_t color);
     void setCursor(uint8_t column, uint8_t row);
     void setCursorCoord(uint8_t coordX, uint8_t coordY);
+    void setCursorColumn(uint8_t column);
+    void setCursorRow(uint8_t row);
     void setDisplayOn(bool displayOn);
     void invertDisplay(bool invert);
     void flipVertically (bool flip);
