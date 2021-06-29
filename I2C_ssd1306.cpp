@@ -310,8 +310,7 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
     drawVLine(x0, y0, y1, color);
     return;
   }
-  else if (y1 < y0) slopeDirection = -1;
-
+  
   if (abs(x1 - x0) < abs(y1 - y0)) {
     swapped = true;
     _swap_uint8_t(x0, y0);
@@ -322,6 +321,8 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
     _swap_uint8_t(x0, x1);
     _swap_uint8_t(y0, y1);
   }
+
+  if (y1 < y0) slopeDirection = -1;
 
   uint8_t dx = x1 - x0;
   uint8_t dy = abs(y1 - y0);
