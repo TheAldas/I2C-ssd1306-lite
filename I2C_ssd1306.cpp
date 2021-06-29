@@ -471,6 +471,14 @@ void I2C_ssd1306::invertDisplay(bool invert){
   else sendCommand(COMMAND_SET_DISPLAY_NORMAL);
 }
 
+void I2C_ssd1306::flipVertically(bool flip){
+  if(flip){
+    sendCommand(COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE);
+  }else{
+    sendCommand(COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL);
+  }
+}
+
 void I2C_ssd1306::setContrast(uint8_t contrastValue) {
   START_TRANSMISSION
   wire->write(COMMAND_CONTRAST);
@@ -516,8 +524,8 @@ void I2C_ssd1306::initialize() {
     COMMAND_DISPLAY_OFFSET,
     (0x00),
     (0x40), //set display start line to 0
-    COMMAND_SET_SEGMENT_RE_MAP_NORMAL,
-    COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL,
+    COMMAND_SET_SEGMENT_RE_MAP | DISPLAY_FLIP_HORIZONTALLY,
+    COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE,
     COMMAND_COM_PINS_CONFIGURATION,
     comPinsConf,
     COMMAND_MEMORY_ADDRESSING_MODE,

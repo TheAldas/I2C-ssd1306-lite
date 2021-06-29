@@ -8,8 +8,9 @@
 #define COMMAND_DISPLAY_ON 0xAF
 #define COMMAND_MUX_RATIO 0xA8
 #define COMMAND_DISPLAY_OFFSET 0xD3
-#define COMMAND_SET_SEGMENT_RE_MAP_NORMAL 0xA0
+#define COMMAND_SET_SEGMENT_RE_MAP 0xA0
 #define COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL 0xC0
+#define COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE 0xC8
 #define COMMAND_COM_PINS_CONFIGURATION 0xDA //Set COM Pins hardware configuration
 #define COMMAND_MEMORY_ADDRESSING_MODE 0x20//set addressing mode
 #define COMMAND_CONTRAST 0x81//contrast between 0 and 255
@@ -23,6 +24,8 @@
 #define COMMAND_DEACTIVATE_SCROLL 0x2E
 #define COMMAND_SET_COLUMN_ADDRESS 0x21
 #define COMMAND_SET_PAGE_ADDRESS 0x22
+
+#define DISPLAY_FLIP_HORIZONTALLY 0x1
 
 #define COLOR_BLACK 0
 #define COLOR_WHITE 1
@@ -60,6 +63,7 @@ class I2C_ssd1306 {
     void drawText(const unsigned char text[], uint8_t color);
     void setDisplayOn(bool displayOn);
     void invertDisplay(bool invert);
+    void flipVertically (bool flip);
     void setContrast(uint8_t contrastValue);
     
   private:
