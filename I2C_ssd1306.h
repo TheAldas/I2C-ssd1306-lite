@@ -39,7 +39,6 @@
 
 #define ROUND(x) ((int)(x+0.5f))
 
-
 class I2C_ssd1306 {
   public:
     I2C_ssd1306(uint8_t width, uint8_t height, byte ssd1306_address);
@@ -61,6 +60,8 @@ class I2C_ssd1306 {
     void drawXBM(const uint8_t bitmap[], uint8_t height, uint8_t width, uint8_t x, uint8_t y, uint8_t color);
     void setFont(const unsigned char *fonts);
     void drawText(const unsigned char text[], uint8_t color);
+    void setCursor(uint8_t column, uint8_t row);
+    void setCursorCoord(uint8_t coordX, uint8_t coordY);
     void setDisplayOn(bool displayOn);
     void invertDisplay(bool invert);
     void flipVertically (bool flip);
@@ -77,6 +78,11 @@ class I2C_ssd1306 {
       uint8_t charHeight;
       uint16_t firstCharIndex, lastCharindex, totalChars;
     } curFont;
+    struct textConfiguration
+    {
+      int8_t lineSpacing = 1;
+      int8_t letterSpacing = 1;
+    } textConf;
     
     const unsigned char *_fontFamily;
     uint8_t _fontSizeX = 5;

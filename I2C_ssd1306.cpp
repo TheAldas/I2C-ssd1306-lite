@@ -310,7 +310,7 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
     drawVLine(x0, y0, y1, color);
     return;
   }
-  
+
   if (abs(x1 - x0) < abs(y1 - y0)) {
     swapped = true;
     _swap_uint8_t(x0, y0);
@@ -458,8 +458,18 @@ void I2C_ssd1306::drawText(const unsigned char text[], uint8_t color){
         }
       }
     }
-    _cursorX += charWidth + 1;
+    _cursorX += charWidth + textConf.letterSpacing;
   }
+}
+
+void I2C_ssd1306::setCursor(uint8_t column, uint8_t row){
+  _cursorX = column;
+  _cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);
+}
+
+void I2C_ssd1306::setCursorCoord(uint8_t coordX, uint8_t coordY){
+  _cursorX = coordX;
+  _cursorY = coordY;
 }
 
 void I2C_ssd1306::setDisplayOn(bool displayOn){
