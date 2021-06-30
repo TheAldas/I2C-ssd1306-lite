@@ -441,6 +441,12 @@ void I2C_ssd1306::setFont(const unsigned char *fonts){
 
 size_t I2C_ssd1306::write(uint8_t c){
   uint8_t charBitmapByte, bitsLeft;
+  if(c == '\n'){ //transfer to new line
+    _cursorX = 0;
+    _cursorY += curFont.charHeight + textConf.lineSpacing;
+    return 1;
+  }
+  if(c == '\r') return 1; //ignoring carriage return
   if(c < curFont.firstCharIndex || c > curFont.lastCharindex) return 1;
   uint16_t charHeadIndex =  (((int)c - curFont.firstCharIndex) << 2) + 8 ;
   uint8_t charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
@@ -464,6 +470,11 @@ void I2C_ssd1306::drawText(const char text[], uint8_t color){
   uint16_t charHeadIndex;
   uint32_t charOffset;
   for(uint16_t i = 0; i < strlen((char *)text); i++){
+    if(text[i] == '\n'){ //transfer to new line
+      _cursorX = 0;
+      _cursorY += curFont.charHeight + textConf.lineSpacing;
+      continue;
+    }
     if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharindex) continue;
     charHeadIndex =  (((int)text[i] - curFont.firstCharIndex) << 2) + 8 ;
     charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
