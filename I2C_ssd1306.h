@@ -74,6 +74,8 @@ class I2C_ssd1306:public Print {
     void flipVertically (bool flip);
     void setContrast(uint8_t contrastValue);
     
+    uint8_t getHeight(){return _height;}
+    uint8_t getWidth(){return _width;}
   private:
     void initialize();
     void sendCommand(uint8_t command);
