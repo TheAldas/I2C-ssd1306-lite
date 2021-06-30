@@ -21,9 +21,9 @@ void I2C_ssd1306::begin(TwoWire &I2Cwire) {
 
 void I2C_ssd1306::display() {
   uint8_t addrResList[] = {
-    COMMAND_SET_PAGE_ADDRESS,
+    SSD_COMMAND_SET_PAGE_ADDRESS,
     0x00, _height - 1,
-    COMMAND_SET_COLUMN_ADDRESS,
+    SSD_COMMAND_SET_COLUMN_ADDRESS,
     0x00, (_width - 1)
   };
 
@@ -33,12 +33,12 @@ void I2C_ssd1306::display() {
   uint8_t bytesSent = 1;
   uint8_t *ptr = _screenBuffer;
   START_TRANSMISSION
-  wire->write(dataByte);
+  wire->write(SSD_dataByte);
   while (columnsCount--) {
     if (bytesSent >= MAX_I2C_BYTES) {
       END_TRANSMISSION
       START_TRANSMISSION
-      wire->write(dataByte);
+      wire->write(SSD_dataByte);
       bytesSent = 1;
     }
     wire->write(*ptr++);
@@ -54,10 +54,10 @@ void I2C_ssd1306::clearDisplay() {
 void I2C_ssd1306::drawPixel(int16_t x, int16_t y, uint8_t color) {
   if (x >= _width || y >= _height || x < 0 || y < 0) return;
   switch (color) {
-    case COLOR_BLACK:
+    case SSD_COLOR_BLACK:
       _screenBuffer[((int)((y >> 3) * (_width)) + x)] &= ~(1 << (y & 0b111));
       break;
-    case COLOR_WHITE:
+    case SSD_COLOR_WHITE:
       _screenBuffer[((int)((y >> 3) * (_width)) + x)] |= (1 << (y & 0b111));
       break;
     default:
@@ -351,12 +351,12 @@ void I2C_ssd1306::drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color) {
   if (x0 > x1) _swap_int16_t(x0, x1);
   
   switch (color) {
-      case COLOR_BLACK:
+      case SSD_COLOR_BLACK:
         for (; x0 <= x1; x0++) {
           _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] &= ~(1 << (y0 & 0b111));
         }
         break;
-      case COLOR_WHITE:
+      case SSD_COLOR_WHITE:
         for (; x0 <= x1; x0++) {
           _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] |= (1 << (y0 & 0b111));
         }
@@ -389,12 +389,12 @@ void I2C_ssd1306::drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color) {
   y1 = (y1 >= 0) ? y1 : (0);
   
   switch (color) {
-      case COLOR_BLACK:
+      case SSD_COLOR_BLACK:
         for (; y0 <= y1; y0++) {
           _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] &= ~(1 << (y0 & 0b111));
         }
         break;
-      case COLOR_WHITE:
+      case SSD_COLOR_WHITE:
         for (; y0 <= y1; y0++) {
           _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] |= (1 << (y0 & 0b111));
         }
@@ -492,47 +492,39 @@ void I2C_ssd1306::setCursorCoord(uint8_t coordX, uint8_t coordY){
   _cursorY = coordY;
 }
 
-void I2C_ssd1306::setCursorColumn(uint8_t column){
-  _cursorX = column;
-}
-
-void I2C_ssd1306::setCursorRow(uint8_t row){
-  _cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);
-}
-
 void I2C_ssd1306::advanceCursorRow(uint8_t rowCount, uint8_t column){
   _cursorY += (curFont.charHeight * rowCount) + (textConf.lineSpacing * rowCount);
   _cursorX = column;
 }
 
 void I2C_ssd1306::setDisplayOn(bool displayOn){
-  if(displayOn) sendCommand(COMMAND_DISPLAY_ON);
-  else sendCommand(COMMAND_DISPLAY_OFF);
+  if(displayOn) sendCommand(SSD_COMMAND_DISPLAY_ON);
+  else sendCommand(SSD_COMMAND_DISPLAY_OFF);
 }
 
 void I2C_ssd1306::invertDisplay(bool invert){
-  if(invert) sendCommand(COMMAND_SET_DISPLAY_INVERSE);
-  else sendCommand(COMMAND_SET_DISPLAY_NORMAL);
+  if(invert) sendCommand(SSD_COMMAND_SET_DISPLAY_INVERSE);
+  else sendCommand(SSD_COMMAND_SET_DISPLAY_NORMAL);
 }
 
 void I2C_ssd1306::flipVertically(bool flip){
   if(flip){
-    sendCommand(COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE);
+    sendCommand(SSD_COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE);
   }else{
-    sendCommand(COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL);
+    sendCommand(SSD_COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL);
   }
 }
 
 void I2C_ssd1306::setContrast(uint8_t contrastValue) {
   START_TRANSMISSION
-  wire->write(COMMAND_CONTRAST);
+  wire->write(SSD_COMMAND_CONTRAST);
   wire->write(contrastValue);
   END_TRANSMISSION
 }
 
 void I2C_ssd1306::sendCommand(uint8_t command) {
   START_TRANSMISSION
-  wire->write(commandByte);
+  wire->write(SSD_commandByte);
   wire->write(command);
   END_TRANSMISSION
 }
@@ -540,12 +532,12 @@ void I2C_ssd1306::sendCommand(uint8_t command) {
 void I2C_ssd1306::sendCommandList(uint8_t* c_ptr, uint8_t listSize) {
   uint8_t bytesSent = 1;
   START_TRANSMISSION
-  wire->write(commandByte);
+  wire->write(SSD_commandByte);
   while (listSize--) {
     if (bytesSent >= MAX_I2C_BYTES) {
       END_TRANSMISSION
       START_TRANSMISSION
-      wire->write(commandByte);
+      wire->write(SSD_commandByte);
       bytesSent = 1;
     }
     wire->write((*c_ptr++));
@@ -558,34 +550,34 @@ void I2C_ssd1306::initialize() {
   uint8_t comPinsConf = 0x02;
   if(_width == 128 && _height == 64) comPinsConf = 0x12;
   uint8_t initList[] = {
-    COMMAND_DISPLAY_OFF,
-    COMMAND_MUX_RATIO,
+    SSD_COMMAND_DISPLAY_OFF,
+    SSD_COMMAND_MUX_RATIO,
     (_height - 1),
-    COMMAND_SET_PAGE_ADDRESS,
+    SSD_COMMAND_SET_PAGE_ADDRESS,
     0, (_height / 8 - 1),
-    COMMAND_SET_COLUMN_ADDRESS,
+    SSD_COMMAND_SET_COLUMN_ADDRESS,
     0, (_width - 1),
-    COMMAND_DISPLAY_OFFSET,
+    SSD_COMMAND_DISPLAY_OFFSET,
     (0x00),
     (0x40), //set display start line to 0
-    COMMAND_SET_SEGMENT_RE_MAP | DISPLAY_FLIP_HORIZONTALLY,
-    COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE,
-    COMMAND_COM_PINS_CONFIGURATION,
+    SSD_COMMAND_SET_SEGMENT_RE_MAP | SSD_DISPLAY_FLIP_HORIZONTALLY,
+    SSD_COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE,
+    SSD_COMMAND_COM_PINS_CONFIGURATION,
     comPinsConf,
-    COMMAND_MEMORY_ADDRESSING_MODE,
+    SSD_COMMAND_MEMORY_ADDRESSING_MODE,
     0x00,
-    COMMAND_CONTRAST,
+    SSD_COMMAND_CONTRAST,
     0xF7,
-    COMMAND_DISABLE_ENTIRE_DISPLAY_ON,
-    COMMAND_SET_DISPLAY_NORMAL,
-    COMMAND_SET_CLOCK_DIV,
+    SSD_COMMAND_DISABLE_ENTIRE_DISPLAY_ON,
+    SSD_COMMAND_SET_DISPLAY_NORMAL,
+    SSD_COMMAND_SET_CLOCK_DIV,
     0x80,
-    COMMAND_CHARGE_PUMP,
+    SSD_COMMAND_CHARGE_PUMP,
     0x14,
-    COMMAND_PRE_CHARGE,
+    SSD_COMMAND_PRE_CHARGE,
     0x22,
-    COMMAND_DEACTIVATE_SCROLL,
-    COMMAND_DISPLAY_ON
+    SSD_COMMAND_DEACTIVATE_SCROLL,
+    SSD_COMMAND_DISPLAY_ON
   };
   sendCommandList(&initList[0], sizeof(initList));
   //free(initList);

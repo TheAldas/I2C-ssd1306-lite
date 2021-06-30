@@ -5,37 +5,37 @@
 #include "Arduino.h"
 #include "Print.h"
 
-#define COMMAND_DISPLAY_OFF 0xAE
-#define COMMAND_DISPLAY_ON 0xAF
-#define COMMAND_MUX_RATIO 0xA8
-#define COMMAND_DISPLAY_OFFSET 0xD3
-#define COMMAND_SET_SEGMENT_RE_MAP 0xA0
-#define COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL 0xC0
-#define COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE 0xC8
-#define COMMAND_COM_PINS_CONFIGURATION 0xDA //Set COM Pins hardware configuration
-#define COMMAND_MEMORY_ADDRESSING_MODE 0x20//set addressing mode
-#define COMMAND_CONTRAST 0x81//contrast between 0 and 255
-#define COMMAND_DISABLE_ENTIRE_DISPLAY_ON 0xA4
-#define COMMAND_ENABLE_ENTIRE_DISPLAY_ON 0xA5
-#define COMMAND_SET_DISPLAY_NORMAL 0xA6
-#define COMMAND_SET_DISPLAY_INVERSE 0xA7
-#define COMMAND_SET_CLOCK_DIV 0xD5
-#define COMMAND_CHARGE_PUMP 0x8D
-#define COMMAND_PRE_CHARGE 0xD9 //set pre charge
-#define COMMAND_DEACTIVATE_SCROLL 0x2E
-#define COMMAND_SET_COLUMN_ADDRESS 0x21
-#define COMMAND_SET_PAGE_ADDRESS 0x22
+#define SSD_COMMAND_DISPLAY_OFF 0xAE
+#define SSD_COMMAND_DISPLAY_ON 0xAF
+#define SSD_COMMAND_MUX_RATIO 0xA8
+#define SSD_COMMAND_DISPLAY_OFFSET 0xD3
+#define SSD_COMMAND_SET_SEGMENT_RE_MAP 0xA0
+#define SSD_COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_NORMAL 0xC0
+#define SSD_COMMAND_SET_COM_OUTPUT_SCAN_DIRECTION_INVERSE 0xC8
+#define SSD_COMMAND_COM_PINS_CONFIGURATION 0xDA //Set COM Pins hardware configuration
+#define SSD_COMMAND_MEMORY_ADDRESSING_MODE 0x20//set addressing mode
+#define SSD_COMMAND_CONTRAST 0x81//contrast between 0 and 255
+#define SSD_COMMAND_DISABLE_ENTIRE_DISPLAY_ON 0xA4
+#define SSD_COMMAND_ENABLE_ENTIRE_DISPLAY_ON 0xA5
+#define SSD_COMMAND_SET_DISPLAY_NORMAL 0xA6
+#define SSD_COMMAND_SET_DISPLAY_INVERSE 0xA7
+#define SSD_COMMAND_SET_CLOCK_DIV 0xD5
+#define SSD_COMMAND_CHARGE_PUMP 0x8D
+#define SSD_COMMAND_PRE_CHARGE 0xD9 //set pre charge
+#define SSD_COMMAND_DEACTIVATE_SCROLL 0x2E
+#define SSD_COMMAND_SET_COLUMN_ADDRESS 0x21
+#define SSD_COMMAND_SET_PAGE_ADDRESS 0x22
 
-#define DISPLAY_FLIP_HORIZONTALLY 0x1
+#define SSD_DISPLAY_FLIP_HORIZONTALLY 0x1
 
-#define COLOR_BLACK 0
-#define COLOR_WHITE 1
-#define COLOR_INVERSE 2
+#define SSD_COLOR_BLACK 0
+#define SSD_COLOR_WHITE 1
+#define SSD_COLOR_INVERSE 2
 
 #define START_TRANSMISSION wire->beginTransmission(_addr);
 #define END_TRANSMISSION wire->endTransmission();
-#define commandByte 0x00
-#define dataByte 0x40
+#define SSD_commandByte 0x00
+#define SSD_dataByte 0x40
 #define MAX_I2C_BYTES 32
 
 #define ROUND(x) ((int)(x+0.5f))
@@ -66,8 +66,8 @@ class I2C_ssd1306:public Print {
     void drawText(const char text[], uint8_t color);
     void setCursor(uint8_t column, uint8_t row);
     void setCursorCoord(uint8_t coordX, uint8_t coordY);
-    void setCursorColumn(uint8_t column);
-    void setCursorRow(uint8_t row);
+    void setCursorColumn(uint8_t column){_cursorX = column;}
+    void setCursorRow(uint8_t row) {_cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);}
     void advanceCursorRow(uint8_t rowCount, uint8_t column);
     void setDisplayOn(bool displayOn);
     void invertDisplay(bool invert);
@@ -89,7 +89,7 @@ class I2C_ssd1306:public Print {
     {
       int8_t lineSpacing = 1;
       int8_t letterSpacing = 1;
-      uint8_t textColor = COLOR_WHITE;
+      uint8_t textColor = SSD_COLOR_WHITE;
     } textConf;
     
     const unsigned char *_fontFamily;
