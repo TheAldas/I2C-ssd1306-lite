@@ -416,7 +416,7 @@ void I2C_ssd1306::drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color) {
   }
 }*/
 
-void I2C_ssd1306::drawXBM(const uint8_t *bitmap, uint8_t height, uint8_t width, uint8_t x0, uint8_t y0, uint8_t color){
+void I2C_ssd1306::drawXBM(const uint8_t *bitmap, uint8_t width, uint8_t height, uint8_t x0, uint8_t y0, uint8_t color){
   height = height + y0 <= _height ?  height : _height - y0;
   uint8_t widthInBytes = (width+7) >> 3, bmpByte, dataBits;
   uint16_t totalBytes = (uint16_t)(widthInBytes * height);

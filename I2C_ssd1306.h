@@ -61,7 +61,7 @@ class I2C_ssd1306:public Print {
     void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color);
     void drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color);
     void drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color);
-    void drawXBM(const uint8_t bitmap[], uint8_t height, uint8_t width, uint8_t x, uint8_t y, uint8_t color);
+    void drawXBM(const uint8_t bitmap[], uint8_t width, uint8_t height, uint8_t x, uint8_t y, uint8_t color);
     void setFont(const unsigned char *fonts);
     void drawText(const char text[], uint8_t color);
     void setCursor(uint8_t column, uint8_t row);
