@@ -425,7 +425,7 @@ void I2C_ssd1306::drawXBM(const uint8_t *bitmap, uint8_t width, uint8_t height, 
       bmpByte = pgm_read_byte(&bitmap[y * widthInBytes + xByte]);
       dataBits = ((xByte + 1) >> 3) > width ? width & 0b111 : 7;
       for(uint8_t i = 0; i <= dataBits; i++)
-        if((bmpByte >> i) & 1) drawPixel(((xByte << 3) + i), y0 + y, color);
+        if((bmpByte >> i) & 1) drawPixel((x0 + (xByte << 3) + i), y0 + y, color);
     }
   }
 }
