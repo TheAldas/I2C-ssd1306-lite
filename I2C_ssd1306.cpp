@@ -439,7 +439,27 @@ void I2C_ssd1306::setFont(const unsigned char *fonts){
   curFont.totalChars = (curFont.lastCharindex - curFont.firstCharIndex + 1);
 }
 
-void I2C_ssd1306::drawText(const unsigned char text[], uint8_t color){
+size_t I2C_ssd1306::write(uint8_t c){
+  uint8_t charBitmapByte, bitsLeft;
+  if(c < curFont.firstCharIndex || c > curFont.lastCharindex) return 1;
+  uint16_t charHeadIndex =  (((int)c - curFont.firstCharIndex) << 2) + 8 ;
+  uint8_t charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
+  uint32_t charOffset = (pgm_read_byte(&_fontFamily[charHeadIndex + 3]) << 16) | (pgm_read_byte(&_fontFamily[charHeadIndex + 2]) << 8) | pgm_read_byte(&_fontFamily[charHeadIndex+1]);
+  for(uint8_t clmnByte = 0; clmnByte < ((charWidth + 7) >> 3); clmnByte++){
+    for(uint8_t y = 0; y < curFont.charHeight; y++){
+      
+      charBitmapByte = pgm_read_byte(&_fontFamily[charOffset + y * ((charWidth + 7) >> 3) + clmnByte]);
+      bitsLeft = charWidth < (1 + clmnByte) << 3 ? (charWidth & 0b111) : 8;
+      for(uint8_t x = 0; x < bitsLeft; x++){
+        if((charBitmapByte >> x) & 1) drawPixel(_cursorX + (clmnByte << 3) + x, _cursorY + y, textConf.textColor);
+      }
+    }
+  }
+  _cursorX += charWidth + textConf.letterSpacing;
+  return 1;
+}
+
+void I2C_ssd1306::drawText(const char text[], uint8_t color){
   uint8_t charWidth, charBitmapByte, bitsLeft;
   uint16_t charHeadIndex;
   uint32_t charOffset;
@@ -478,6 +498,11 @@ void I2C_ssd1306::setCursorColumn(uint8_t column){
 
 void I2C_ssd1306::setCursorRow(uint8_t row){
   _cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);
+}
+
+void I2C_ssd1306::advanceCursorRow(uint8_t rowCount, uint8_t column){
+  _cursorY += (curFont.charHeight * rowCount) + (textConf.lineSpacing * rowCount);
+  _cursorX = column;
 }
 
 void I2C_ssd1306::setDisplayOn(bool displayOn){

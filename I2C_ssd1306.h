@@ -3,6 +3,7 @@
 #define I2C_ssd1306_h
 
 #include "Arduino.h"
+#include "Print.h"
 
 #define COMMAND_DISPLAY_OFF 0xAE
 #define COMMAND_DISPLAY_ON 0xAF
@@ -39,8 +40,11 @@
 
 #define ROUND(x) ((int)(x+0.5f))
 
-class I2C_ssd1306 {
+class I2C_ssd1306:public Print {
   public:
+    using Print::write;
+    virtual size_t write(uint8_t c);
+
     I2C_ssd1306(uint8_t width, uint8_t height, byte ssd1306_address);
     void begin(TwoWire &I2Cwire);
     void display();
@@ -59,11 +63,12 @@ class I2C_ssd1306 {
     void drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color);
     void drawXBM(const uint8_t bitmap[], uint8_t height, uint8_t width, uint8_t x, uint8_t y, uint8_t color);
     void setFont(const unsigned char *fonts);
-    void drawText(const unsigned char text[], uint8_t color);
+    void drawText(const char text[], uint8_t color);
     void setCursor(uint8_t column, uint8_t row);
     void setCursorCoord(uint8_t coordX, uint8_t coordY);
     void setCursorColumn(uint8_t column);
     void setCursorRow(uint8_t row);
+    void advanceCursorRow(uint8_t rowCount, uint8_t column);
     void setDisplayOn(bool displayOn);
     void invertDisplay(bool invert);
     void flipVertically (bool flip);
@@ -84,6 +89,7 @@ class I2C_ssd1306 {
     {
       int8_t lineSpacing = 1;
       int8_t letterSpacing = 1;
+      uint8_t textColor = COLOR_WHITE;
     } textConf;
     
     const unsigned char *_fontFamily;
