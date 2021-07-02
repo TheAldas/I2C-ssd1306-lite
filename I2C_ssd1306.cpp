@@ -540,6 +540,7 @@ void I2C_ssd1306::flipVertically(bool flip){
 
 void I2C_ssd1306::setContrast(uint8_t contrastValue) {
   START_TRANSMISSION
+  wire->write(SSD_commandByte);
   wire->write(SSD_COMMAND_CONTRAST);
   wire->write(contrastValue);
   END_TRANSMISSION
