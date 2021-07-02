@@ -493,6 +493,18 @@ void I2C_ssd1306::drawText(const char text[], uint8_t color){
   }
 }
 
+uint16_t I2C_ssd1306::getTextWidth(const char text[]){
+  uint8_t charWidth;
+  uint16_t charHeadIndex, width = 0;
+  for(uint16_t i = 0; i < strlen((char *)text); i++){
+    if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharindex) continue;
+    charHeadIndex =  (((int)text[i] - curFont.firstCharIndex) << 2) + 8 ;
+    charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
+    width += charWidth + textConf.letterSpacing;
+  }
+  return width;
+}
+
 void I2C_ssd1306::setCursor(uint8_t column, uint8_t row){
   _cursorX = column;
   _cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);
