@@ -16,11 +16,11 @@
 * **Empty, only initialized 128x32 without fonts**
   * <4.6KB of Flash
 
-*  **Empty, only initialized 128x32 with picopixel fonts initialized and integer printed
+*  **Empty, only initialized 128x32 with picopixel fonts initialized and integer printed**
    * <6KB of Flash
    * <934B of SRAM
 
-*  **Empty, only initialized 128x64 with picopixel fonts initialized and integer printed
+*  **Empty, only initialized 128x64 with picopixel fonts initialized and integer printed**
    * <6KB of Flash
    * <1446B of SRAM
 
