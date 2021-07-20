@@ -12,11 +12,48 @@ I2C_ssd1306::I2C_ssd1306(uint8_t width, uint8_t height, byte ssd1306_address) {
   _screenBuffer = (uint8_t *)malloc((width * (height + 7) / 8));
 }
 
-
+I2C_ssd1306_minimal::I2C_ssd1306_minimal(uint8_t width, uint8_t height, byte ssd1306_address){
+  _width = width;
+  _height = height;
+  _addr = ssd1306_address;
+  _screenBuffer = (uint8_t *)malloc(width);
+  _endX = 0;
+  _startX = _width - 1;
+}
 
 void I2C_ssd1306::begin(TwoWire &I2Cwire) {
   wire = &I2Cwire;
   initialize();
+}
+
+void I2C_ssd1306_minimal::display(){
+  if(_endX < _startX) return;
+  uint8_t addrResList[] = {
+    SSD_COMMAND_SET_PAGE_ADDRESS,
+    _currentPage, _height - 1,
+    SSD_COMMAND_SET_COLUMN_ADDRESS,
+    0, (_width - 1)
+  };
+  sendCommandList(addrResList, sizeof(addrResList));
+
+  uint8_t columnsCount = 128;
+  uint8_t bytesSent = 1;
+  uint8_t *ptr = _screenBuffer;
+  START_TRANSMISSION
+  wire->write(SSD_dataByte);
+  while (columnsCount--) {
+    if (bytesSent >= MAX_I2C_BYTES) {
+      END_TRANSMISSION
+      START_TRANSMISSION
+      wire->write(SSD_dataByte);
+      bytesSent = 1;
+    }
+    wire->write(*ptr++);
+    bytesSent++;
+  }
+  END_TRANSMISSION
+  _endX = 0;
+  _startX = _width - 1;
 }
 
 void I2C_ssd1306::display() {
@@ -28,8 +65,7 @@ void I2C_ssd1306::display() {
   };
 
   sendCommandList(addrResList, sizeof(addrResList));
-  free(addrResList);
-  uint16_t columnsCount = (_width * _height / 8);
+  uint16_t columnsCount = (_width * (_height + 7) / 8);
   uint8_t bytesSent = 1;
   uint8_t *ptr = _screenBuffer;
   START_TRANSMISSION
@@ -51,8 +87,55 @@ void I2C_ssd1306::clearDisplay() {
   memset(_screenBuffer, 0, (_width * (_height + 7) / 8));
 }
 
+void I2C_ssd1306_minimal::clearDisplay() {
+  clearPage();
+  for(_currentPage = 0; _currentPage <= (_height + 7) >> 3; _currentPage++){
+    _endX = _width - 1;
+    _startX = 0;
+    display();
+  }
+  _currentPage = 0;
+  _endX = 0;
+  _startX = _width - 1;
+}
+
+void I2C_ssd1306_minimal::clearPage(){
+    memset(_screenBuffer, 0, (_width));
+}
+
+void I2C_ssd1306_minimal::drawPixel(int16_t x, int16_t y, uint8_t color) {
+  if (x >= _width || y >= _height || x < 0 || y < 0) return;
+
+  if((y / 8) != _currentPage){
+    #if MINIMAL_AUTO
+    if(_startX <= _endX) display();
+    clearPage();
+    _currentPage = y / 8;
+    _endX = 0;
+    _startX = _width - 1;
+    #else
+      return;
+    #endif
+  }
+  _endX = _endX < x ? x : _endX;
+  _startX = _startX > x ? x : _startX;
+  
+  switch (color) {
+    case SSD_COLOR_BLACK:
+      _screenBuffer[x] &= ~(1 << (y & 0b111));
+      break;
+    case SSD_COLOR_WHITE:
+      _screenBuffer[x] |= (1 << (y & 0b111));
+      break;
+    default:
+      _screenBuffer[x] ^= (1 << (y & 0b111));
+      break;
+  }
+}
+
 void I2C_ssd1306::drawPixel(int16_t x, int16_t y, uint8_t color) {
   if (x >= _width || y >= _height || x < 0 || y < 0) return;
+
   switch (color) {
     case SSD_COLOR_BLACK:
       _screenBuffer[((int)((y >> 3) * (_width)) + x)] &= ~(1 << (y & 0b111));
@@ -63,7 +146,6 @@ void I2C_ssd1306::drawPixel(int16_t x, int16_t y, uint8_t color) {
     default:
       _screenBuffer[((int)((y >> 3) * (_width)) + x)] ^= (1 << (y & 0b111));
       break;
-
   }
 }
 
@@ -339,7 +421,6 @@ void I2C_ssd1306::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8
   }
 }
 
-//faster implementation of drawHLine without drawPixel call
 void I2C_ssd1306::drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color) {
   y0 = (y0 < _height) ? y0 : (_height - 1);
   x0 = (x0 < _width) ? x0 : (_width - 1);
@@ -350,71 +431,25 @@ void I2C_ssd1306::drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color) {
 
   if (x0 > x1) _swap_int16_t(x0, x1);
   
-  switch (color) {
-      case SSD_COLOR_BLACK:
-        for (; x0 <= x1; x0++) {
-          _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] &= ~(1 << (y0 & 0b111));
-        }
-        break;
-      case SSD_COLOR_WHITE:
-        for (; x0 <= x1; x0++) {
-          _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] |= (1 << (y0 & 0b111));
-        }
-        break;
-      default:
-        for (; x0 <= x1; x0++) {
-          _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] ^= (1 << (y0 & 0b111));
-        }
-        break;
-    }
-}
-
-/*
-void I2C_ssd1306::drawHLine(int16_t x0, int16_t y0, int16_t x1, uint8_t color) {
-  if (x0 > x1) _swap_int16_t(x0, x1);
-  
   for (; x0 <= x1; x0++) {
     drawPixel(x0, y0, color);
   }
-}*/
+}
 
-//faster implementation of drawVLine without drawPixel call
 void I2C_ssd1306::drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color) {
-  if (y0 > y1) _swap_int16_t(y0, y1);
   y0 = (y0 < _height) ? y0 : (_height - 1);
   x0 = (x0 < _width) ? x0 : (_width - 1);
   y1 = (y1 < _height) ? y1 : (_height - 1);
   y0 = (y0 >= 0) ? y0 : (0);
   x0 = (x0 >= 0) ? x0 : (0);
   y1 = (y1 >= 0) ? y1 : (0);
-  
-  switch (color) {
-      case SSD_COLOR_BLACK:
-        for (; y0 <= y1; y0++) {
-          _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] &= ~(1 << (y0 & 0b111));
-        }
-        break;
-      case SSD_COLOR_WHITE:
-        for (; y0 <= y1; y0++) {
-          _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] |= (1 << (y0 & 0b111));
-        }
-        break;
-      default:
-        for (; y0 <= y1; y0++) {
-          _screenBuffer[((int)((y0 >> 3) * (_width)) + x0)] ^= (1 << (y0 & 0b111));
-        }
-        break;
-    }
-}
 
-/*
-void I2C_ssd1306::drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color) {
   if (y0 > y1) _swap_int16_t(y0, y1);
   
   for (; y0 <= y1; y0++) {
     drawPixel(x0, y0, color);
   }
-}*/
+}
 
 void I2C_ssd1306::drawXBM(const uint8_t *bitmap, uint8_t width, uint8_t height, uint8_t x0, uint8_t y0, uint8_t color){
   height = height + y0 <= _height ?  height : _height - y0;
@@ -434,9 +469,8 @@ void I2C_ssd1306::drawXBM(const uint8_t *bitmap, uint8_t width, uint8_t height, 
 void I2C_ssd1306::setFont(const unsigned char *fonts){
   _fontFamily = fonts;
   curFont.firstCharIndex = pgm_read_byte(&_fontFamily[0x03]) << 8 | pgm_read_byte_near(&_fontFamily[0x02]);
-  curFont.lastCharindex = pgm_read_byte(&_fontFamily[0x05]) << 8 | pgm_read_byte_near(&_fontFamily[0x04]);
+  curFont.lastCharIndex = pgm_read_byte(&_fontFamily[0x05]) << 8 | pgm_read_byte_near(&_fontFamily[0x04]);
   curFont.charHeight = pgm_read_byte(&_fontFamily[0x06]);
-  curFont.totalChars = (curFont.lastCharindex - curFont.firstCharIndex + 1);
 }
 
 size_t I2C_ssd1306::write(uint8_t c){
@@ -447,10 +481,10 @@ size_t I2C_ssd1306::write(uint8_t c){
     return 1;
   }
   if(c == '\r') return 1; //ignoring carriage return
-  if(c < curFont.firstCharIndex || c > curFont.lastCharindex) return 1;
+  if(c < curFont.firstCharIndex || c > curFont.lastCharIndex) return 1;
   uint16_t charHeadIndex =  (((int)c - curFont.firstCharIndex) << 2) + 8 ;
   uint8_t charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
-  uint32_t charOffset = (pgm_read_byte(&_fontFamily[charHeadIndex + 3]) << 16) | (pgm_read_byte(&_fontFamily[charHeadIndex + 2]) << 8) | pgm_read_byte(&_fontFamily[charHeadIndex+1]);
+  uint32_t charOffset = (((uint32_t)pgm_read_byte(&_fontFamily[charHeadIndex + 3])) << 16) | (((uint16_t)pgm_read_byte(&_fontFamily[charHeadIndex + 2])) << 8) | pgm_read_byte(&_fontFamily[charHeadIndex+1]);
   for(uint8_t clmnByte = 0; clmnByte < ((charWidth + 7) >> 3); clmnByte++){
     for(uint8_t y = 0; y < curFont.charHeight; y++){
       
@@ -475,7 +509,7 @@ void I2C_ssd1306::drawText(const char text[], uint8_t color){
       _cursorY += curFont.charHeight + textConf.lineSpacing;
       continue;
     }
-    if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharindex) continue;
+    if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharIndex) continue;
     charHeadIndex =  (((int)text[i] - curFont.firstCharIndex) << 2) + 8 ;
     charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
     charOffset = ((uint32_t)pgm_read_byte(&_fontFamily[charHeadIndex + 3]) << 16) | (pgm_read_byte(&_fontFamily[charHeadIndex + 2]) << 8) | pgm_read_byte(&_fontFamily[charHeadIndex+1]);
@@ -497,7 +531,7 @@ uint16_t I2C_ssd1306::getTextWidth(const char text[]){
   uint8_t charWidth;
   uint16_t charHeadIndex, width = 0;
   for(uint16_t i = 0; i < strlen((char *)text); i++){
-    if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharindex) continue;
+    if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharIndex) continue;
     charHeadIndex =  (((int)text[i] - curFont.firstCharIndex) << 2) + 8 ;
     charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
     width += charWidth + textConf.letterSpacing;
@@ -604,8 +638,6 @@ void I2C_ssd1306::initialize() {
     SSD_COMMAND_DISPLAY_ON
   };
   sendCommandList(&initList[0], sizeof(initList));
-  //free(initList);
-  END_TRANSMISSION
   clearDisplay();
   display();
 }

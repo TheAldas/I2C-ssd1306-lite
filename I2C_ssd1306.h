@@ -46,10 +46,11 @@ class I2C_ssd1306:public Print {
     virtual size_t write(uint8_t c);
 
     I2C_ssd1306(uint8_t width, uint8_t height, byte ssd1306_address);
+    I2C_ssd1306(){}
     void begin(TwoWire &I2Cwire);
-    void display();
-    void clearDisplay();
-    void drawPixel(int16_t x0, int16_t y0, uint8_t color);
+    virtual void display();
+    virtual void clearDisplay();
+    virtual void drawPixel(int16_t x0, int16_t y0, uint8_t color);
     void fillRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color);
     void fillRectRound(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t cornerRadius, uint8_t color);
     void fillCircle(uint8_t midX, uint8_t midY, uint8_t radius, uint8_t color);
@@ -74,11 +75,11 @@ class I2C_ssd1306:public Print {
     void invertDisplay(bool invert);
     void flipVertically (bool flip);
     void setContrast(uint8_t contrastValue);
-    
     uint8_t getHeight(){return _height;}
     uint8_t getWidth(){return _width;}
-  private:
-    void initialize();
+    
+  protected:
+    virtual void initialize();
     void sendCommand(uint8_t command);
     void sendCommandList(uint8_t *c_ptr, uint8_t listSize);
     void _swap_uint8_t(uint8_t &a, uint8_t &b);
@@ -86,7 +87,7 @@ class I2C_ssd1306:public Print {
     struct fontSummary
     {
       uint8_t charHeight;
-      uint16_t firstCharIndex, lastCharindex, totalChars;
+      uint16_t firstCharIndex, lastCharIndex;
     } curFont;
     struct textConfiguration
     {
@@ -96,8 +97,6 @@ class I2C_ssd1306:public Print {
     } textConf;
     
     const unsigned char *_fontFamily;
-    uint8_t _fontSizeX = 5;
-    uint8_t _fontSizeY = 7;
     uint8_t _cursorX = 0;
     uint8_t _cursorY = 0;
     TwoWire *wire;
@@ -105,4 +104,21 @@ class I2C_ssd1306:public Print {
     byte _addr;
     uint8_t *_screenBuffer;
 };
+
+class I2C_ssd1306_minimal : public I2C_ssd1306
+{
+  public:
+    I2C_ssd1306_minimal(uint8_t width, uint8_t height, byte ssd1306_address);
+    void clearPage();
+    void display();
+    void clearDisplay();
+    void drawPixel(int16_t x0, int16_t y0, uint8_t color);
+    void setPage(uint8_t page){ if(page < ((_height + 7) / 8)) {_currentPage = page; clearPage();}}
+    uint8_t getPage() {return _currentPage;}
+
+  private:
+    uint8_t _currentPage = 0, _startX, _endX;
+};
+
+
 #endif
