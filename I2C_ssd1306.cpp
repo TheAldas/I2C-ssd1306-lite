@@ -1,9 +1,10 @@
 #include "I2C_ssd1306.h"
 
-#if __AVR__
+#ifdef __AVR__
 #include <avr/pgmspace.h>
+#elif defined(ESP8266) || defined(ESP32)
+#include <pgmspace.h>
 #endif
-
 
 I2C_ssd1306::I2C_ssd1306(uint8_t width, uint8_t height, byte ssd1306_address) {
   _width = width;
@@ -35,7 +36,9 @@ void I2C_ssd1306_minimal::display(){
     0, (_width - 1)
   };
   sendCommandList(addrResList, sizeof(addrResList));
-
+  #if defined(ESP8266)
+  yield();
+  #endif
   uint8_t columnsCount = 128;
   uint8_t bytesSent = 1;
   uint8_t *ptr = _screenBuffer;
@@ -63,8 +66,11 @@ void I2C_ssd1306::display() {
     SSD_COMMAND_SET_COLUMN_ADDRESS,
     0x00, (_width - 1)
   };
-
+  
   sendCommandList(addrResList, sizeof(addrResList));
+  #if defined(ESP8266)
+  yield();
+  #endif
   uint16_t columnsCount = (_width * (_height + 7) / 8);
   uint8_t bytesSent = 1;
   uint8_t *ptr = _screenBuffer;
@@ -81,6 +87,9 @@ void I2C_ssd1306::display() {
     bytesSent++;
   }
   END_TRANSMISSION
+  #if defined(ESP8266)
+  yield();
+  #endif
 }
 
 void I2C_ssd1306::clearDisplay() {
