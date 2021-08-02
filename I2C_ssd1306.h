@@ -36,7 +36,7 @@
 #define END_TRANSMISSION wire->endTransmission();
 #define SSD_commandByte 0x00
 #define SSD_dataByte 0x40
-#define MAX_I2C_BYTES 32
+#define MAX_I2C_BYTES 30
 
 #define ROUND(x) ((int)(x+0.5f))
 
