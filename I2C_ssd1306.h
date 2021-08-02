@@ -73,7 +73,7 @@ class I2C_ssd1306:public Print {
     void setCursor(uint8_t column, uint8_t row);
     void setCursorCoord(uint8_t coordX, uint8_t coordY);
     void setCursorColumn(uint8_t column){_cursorX = column;}
-    void setCursorRow(uint8_t row) {_cursorY = (curFont.charHeight * row) + (textConf.lineSpacing * row);}
+    void setCursorRow(uint8_t row) {_cursorY = (curFont.charHeight * textConf.textScale * row) + (textConf.lineSpacing * row);}
     void advanceCursorRow(uint8_t rowCount, uint8_t column);
     void setDisplayOn(bool displayOn);
     void invertDisplay(bool invert);
