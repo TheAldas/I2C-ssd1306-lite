@@ -68,6 +68,8 @@ class I2C_ssd1306:public Print {
     uint16_t getTextWidth(const char text[]);
     void setTextOffset(uint8_t offsetX, uint8_t offsetY) { textConf.offsetX = offsetX; textConf.offsetY = offsetY;};
     void setTextScale(uint8_t textScale) { textConf.textScale = textScale;};
+    void setTextLineSpacing(uint8_t lineSpacing) { textConf.lineSpacing = lineSpacing; };
+    void setTextLetterSpacing(uint8_t letterSpacing) { textConf.letterSpacing; };
     void setCursor(uint8_t column, uint8_t row);
     void setCursorCoord(uint8_t coordX, uint8_t coordY);
     void setCursorColumn(uint8_t column){_cursorX = column;}
