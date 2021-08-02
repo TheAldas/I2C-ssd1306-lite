@@ -500,7 +500,7 @@ size_t I2C_ssd1306::write(uint8_t c){
       charBitmapByte = pgm_read_byte(&_fontFamily[charOffset + y * ((charWidth + 7) >> 3) + clmnByte]);
       bitsLeft = charWidth < (1 + clmnByte) << 3 ? (charWidth & 0b111) : 8;
       for(uint8_t x = 0; x < bitsLeft; x++){
-        if((charBitmapByte >> x) & 1) drawPixel(_cursorX + (clmnByte << 3) + x, _cursorY + y, textConf.textColor);
+        if((charBitmapByte >> x) & 1) drawPixel(textConf.offsetX + _cursorX + (clmnByte << 3) + x, textConf.offsetY + _cursorY + y, textConf.textColor);
       }
     }
   }
@@ -528,7 +528,7 @@ void I2C_ssd1306::drawText(const char text[], uint8_t color){
         charBitmapByte = pgm_read_byte(&_fontFamily[charOffset + y * ((charWidth + 7) >> 3) + clmnByte]);
         bitsLeft = charWidth < (1 + clmnByte) << 3 ? (charWidth & 0b111) : 8;
         for(uint8_t x = 0; x < bitsLeft; x++){
-          if((charBitmapByte >> x) & 1) drawPixel(_cursorX + (clmnByte << 3) + x, _cursorY + y, color);
+          if((charBitmapByte >> x) & 1) drawPixel(textConf.offsetX + _cursorX + (clmnByte << 3) + x, textConf.offsetY + _cursorY + y, color);
         }
       }
     }

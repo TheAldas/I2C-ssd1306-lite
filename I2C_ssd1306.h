@@ -66,6 +66,7 @@ class I2C_ssd1306:public Print {
     void setFont(const unsigned char *fonts);
     void drawText(const char text[], uint8_t color);
     uint16_t getTextWidth(const char text[]);
+    void setTextOffset(uint8_t offsetX, uint8_t offsetY) { textConf.offsetX = offsetX; textConf.offsetY = offsetY;};
     void setCursor(uint8_t column, uint8_t row);
     void setCursorCoord(uint8_t coordX, uint8_t coordY);
     void setCursorColumn(uint8_t column){_cursorX = column;}
@@ -94,6 +95,7 @@ class I2C_ssd1306:public Print {
       int8_t lineSpacing = 1;
       int8_t letterSpacing = 1;
       uint8_t textColor = SSD_COLOR_WHITE;
+      uint8_t offsetX = 0, offsetY = 0;
     } textConf;
     
     const unsigned char *_fontFamily;
