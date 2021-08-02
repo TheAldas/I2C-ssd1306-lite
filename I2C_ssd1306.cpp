@@ -33,15 +33,15 @@ void I2C_ssd1306_minimal::display(){
     SSD_COMMAND_SET_PAGE_ADDRESS,
     _currentPage, _height - 1,
     SSD_COMMAND_SET_COLUMN_ADDRESS,
-    0, (_width - 1)
+    _startX, (_width - 1)
   };
   sendCommandList(addrResList, sizeof(addrResList));
   #if defined(ESP8266)
   yield();
   #endif
-  uint8_t columnsCount = 128;
+  uint8_t columnsCount = (_endX - _startX) + 1;
   uint8_t bytesSent = 1;
-  uint8_t *ptr = _screenBuffer;
+  uint8_t *ptr = _screenBuffer + _startX;
   START_TRANSMISSION
   wire->write(SSD_dataByte);
   while (columnsCount--) {
@@ -117,7 +117,7 @@ void I2C_ssd1306_minimal::drawPixel(int16_t x, int16_t y, uint8_t color) {
 
   if((y / 8) != _currentPage){
     #if MINIMAL_AUTO
-    if(_startX <= _endX) display();
+    display();
     clearPage();
     _currentPage = y / 8;
     _endX = 0;
