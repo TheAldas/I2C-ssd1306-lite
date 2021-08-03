@@ -28,6 +28,17 @@
 
 #define SSD_DISPLAY_FLIP_HORIZONTALLY 0x1
 
+/*
+if the pixel is being drawn out of currently selected page bounds, it's not drawn
+*/
+#define SSD_MINIMAL_MODE_MANUAL 0 
+/*
+  if the pixel is being drawn out of currently selected page bounds,
+  current page buffer is displayed, then cleared and pixel is drawn in bounds of the page.
+  See minimal class drawPixel() function for better understanding.
+*/
+#define SSD_MINIMAL_MODE_AUTO 1 
+
 #define SSD_COLOR_BLACK 0
 #define SSD_COLOR_WHITE 1
 #define SSD_COLOR_INVERSE 2
@@ -121,9 +132,10 @@ class I2C_ssd1306_minimal : public I2C_ssd1306
     void drawPixel(int16_t x0, int16_t y0, uint8_t color);
     void setPage(uint8_t page){ if(page < ((_height + 7) / 8)) {_currentPage = page; clearPage();}}
     uint8_t getPage() {return _currentPage;}
-
+    void setMinimalMode(uint8_t mode) { _mode = mode;};
   private:
     uint8_t _currentPage = 0, _startX, _endX;
+    uint8_t _mode = SSD_MINIMAL_MODE_AUTO;
 };
 
 

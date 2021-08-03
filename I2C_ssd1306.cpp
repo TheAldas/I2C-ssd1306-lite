@@ -116,15 +116,13 @@ void I2C_ssd1306_minimal::drawPixel(int16_t x, int16_t y, uint8_t color) {
   if (x >= _width || y >= _height || x < 0 || y < 0) return;
 
   if((y / 8) != _currentPage){
-    #if MINIMAL_AUTO
-    display();
-    clearPage();
-    _currentPage = y / 8;
-    _endX = 0;
-    _startX = _width - 1;
-    #else
-      return;
-    #endif
+    if(_mode == SSD_MINIMAL_MODE_AUTO){
+      display();
+      clearPage();
+      _currentPage = y / 8;
+      _endX = 0;
+      _startX = _width - 1;
+    }else return;
   }
   _endX = _endX < x ? x : _endX;
   _startX = _startX > x ? x : _startX;
