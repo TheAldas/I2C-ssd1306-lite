@@ -484,8 +484,13 @@ size_t I2C_ssd1306::write(uint8_t c){
     _cursorY += curFont.charHeight * textConf.textScale + textConf.lineSpacing;
     return 1;
   }
-  if(c == '\r') return 1; //ignoring carriage return
-  if(c < curFont.firstCharIndex || c > curFont.lastCharIndex) return 1;
+  else if(c == '\r') return 1; //ignoring carriage return
+  else if (c == ' ')
+  {
+    _cursorX += textConf.textScale + textConf.letterSpacing;
+    return 1;
+  }
+  else if(c < curFont.firstCharIndex || c > curFont.lastCharIndex) return 1;
   uint16_t charHeadIndex =  (((int)c - curFont.firstCharIndex) << 2) + 8 ;
   uint8_t charWidth = (pgm_read_byte(&_fontFamily[charHeadIndex]));
   uint32_t charOffset = (((uint32_t)pgm_read_byte(&_fontFamily[charHeadIndex + 3])) << 16) | (((uint16_t)pgm_read_byte(&_fontFamily[charHeadIndex + 2])) << 8) | pgm_read_byte(&_fontFamily[charHeadIndex+1]);
@@ -513,6 +518,12 @@ void I2C_ssd1306::drawText(const char text[], uint8_t color){
     if(text[i] == '\n'){ //transfer to new line
       _cursorX = 0;
       _cursorY += curFont.charHeight * textConf.textScale + textConf.lineSpacing;
+      continue;
+    }
+    else if(text[i] == '\r'){
+      continue;
+    }else if(text[i] == ' '){
+      _cursorX += textConf.textScale + textConf.letterSpacing;
       continue;
     }
     if(text[i] < curFont.firstCharIndex || text[i] > curFont.lastCharIndex) continue;
