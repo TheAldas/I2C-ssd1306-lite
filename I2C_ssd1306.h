@@ -75,6 +75,7 @@ class I2C_ssd1306:public Print {
     void drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color);
     void drawXBM(const uint8_t bitmap[], uint8_t width, uint8_t height, uint8_t x, uint8_t y, uint8_t color);
     void setFont(const unsigned char *fonts);
+    uint8_t getFontHeight() { return curFont.charHeight * textConf.textScale; };
     void drawText(const char text[], uint8_t color);
     uint16_t getTextWidth(const char text[]);
     void setTextOffset(uint8_t offsetX, uint8_t offsetY) { textConf.offsetX = offsetX; textConf.offsetY = offsetY;};
