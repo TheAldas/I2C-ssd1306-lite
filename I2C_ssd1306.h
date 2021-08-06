@@ -106,7 +106,7 @@ class I2C_ssd1306:public Print {
     } curFont;
     struct textConfiguration
     {
-      int8_t lineSpacing = 1;
+      int8_t lineSpacing = 2;
       int8_t letterSpacing = 1;
       uint8_t textColor = SSD_COLOR_WHITE;
       uint8_t textScale = 1;

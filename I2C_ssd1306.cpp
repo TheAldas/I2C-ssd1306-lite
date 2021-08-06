@@ -460,15 +460,12 @@ void I2C_ssd1306::drawVLine(int16_t x0, int16_t y0, int16_t y1, uint8_t color) {
 
 void I2C_ssd1306::drawXBM(const uint8_t *bitmap, uint8_t width, uint8_t height, uint8_t x0, uint8_t y0, uint8_t color){
   height = height + y0 <= _height ?  height : _height - y0;
-  uint8_t widthInBytes = (width+7) >> 3, bmpByte, dataBits;
-  uint16_t totalBytes = (uint16_t)(widthInBytes * height);
+  uint8_t bmpByte, widthInBytes = (width + 7) >> 3;
   for(uint8_t y = 0; y < height; y++){
-    for(uint8_t xByte = 0; xByte < widthInBytes; xByte++){
-      bmpByte = pgm_read_byte(&bitmap[y * widthInBytes + xByte]);
-      dataBits = ((xByte + 1) >> 3) > width ? width & 0b111 : 7;
-      for(uint8_t i = 0; i <= dataBits; i++)
-        if((bmpByte >> i) & 1) drawPixel((x0 + (xByte << 3) + i), y0 + y, color);
-    }
+    for(uint8_t x = 0; x < width; x++){
+      if((x & 0b111) == 0) bmpByte = pgm_read_byte(&bitmap[y * widthInBytes + (x >> 3)]);
+      if((bmpByte >> (x & 0b111)) & 1) drawPixel(x0 + x, y0 + y, color);
+      }
   }
 }
 
@@ -494,7 +491,6 @@ size_t I2C_ssd1306::write(uint8_t c){
   uint32_t charOffset = (((uint32_t)pgm_read_byte(&_fontFamily[charHeadIndex + 3])) << 16) | (((uint16_t)pgm_read_byte(&_fontFamily[charHeadIndex + 2])) << 8) | pgm_read_byte(&_fontFamily[charHeadIndex+1]);
   for(uint8_t clmnByte = 0; clmnByte < ((charWidth + 7) >> 3); clmnByte++){
     for(uint8_t y = 0; y < curFont.charHeight; y++){
-      
       charBitmapByte = pgm_read_byte(&_fontFamily[charOffset + y * ((charWidth + 7) >> 3) + clmnByte]);
       bitsLeft = charWidth < (1 + clmnByte) << 3 ? (charWidth & 0b111) : 8;
       for(uint8_t x = 0; x < bitsLeft; x++){
