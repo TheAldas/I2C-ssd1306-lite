@@ -1,5 +1,6 @@
 # I2C ssd1306 lite
  A lighter library for oled screens with ssd1306
+ 
  As of may 23rd, 2023 the library is working correctly with Arduino UNO R4, no changes needed. The library on Uno R4 uses more flash memory
  
 ### Compatibility
